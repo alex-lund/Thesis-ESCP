@@ -2,6 +2,7 @@ import pandas as pd
 from textblob import TextBlob
 from prawcore.exceptions import Forbidden
 import requests
+from twitter_scraper import get_tweets
 import praw
 import pysentiment2 as ps
 import demoji
@@ -20,7 +21,7 @@ reddit = praw.Reddit(client_id="_BcGe2c7efYCbw",
 
 print(reddit.user.me())
 
-targetsubreddits = ["investing", "finance", "wallstreetbets"]
+targetsubreddits = ["investing", "finance", "wallstreetbets", "esg" ]
 
 hotposts = OrderedDict.fromkeys(targetsubreddits,[])
 

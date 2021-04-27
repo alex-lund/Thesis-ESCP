@@ -35,8 +35,8 @@ print(d)
 
 """textualanalysis = []
 
-for post in hotposts:
-    textualanalysis.append(str(post.title))
+for values in d:
+    textualanalysis.append(values)
 
 listToStr = ' '.join(map(str, textualanalysis))
 

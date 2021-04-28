@@ -6,6 +6,7 @@ ALEXANDER LUND e201279 - THESIS ESCP
 
 import pandas as pd
 from textblob import TextBlob
+import nltk
 from prawcore.exceptions import Forbidden
 import requests
 from twitter_scraper import get_tweets
@@ -16,6 +17,7 @@ import demoji
 from collections import OrderedDict
 from collections import defaultdict
 
+nltk.download("brown")
 
 ################# REDDIT #################
 
@@ -58,14 +60,17 @@ for keys in searchposts:
 
 
 
-"""textualanalysis = []
+textualanalysis = []
 
-for values in d:
+for values in dsubreddits.values():
+    textualanalysis.append(values)
+
+for values in dsearchwords.values():
     textualanalysis.append(values)
 
 listToStr = ' '.join(map(str, textualanalysis))
 
-
 blob = TextBlob(listToStr)
 
-print(blob[15])"""
+print(blob.word_counts)
+

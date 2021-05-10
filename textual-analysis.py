@@ -34,6 +34,12 @@ blob = TextBlob(listToStr)
 sentiments = []
 
 for sentence in blob.sentences:
-    if sentence == "esg":
+    if "esg" in sentence:
+        sentiments.append(sentence)
+        sentiments.append(sentence.sentiment)
+    if "sustainable finance" in sentence:
+        sentiments.append(sentence)
+        sentiments.append(sentence.sentiment)
+    if "ESG" in sentence:
         sentiments.append(sentence)
         sentiments.append(sentence.sentiment)

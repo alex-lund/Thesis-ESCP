@@ -2,7 +2,7 @@
 
 DATA SOURCING FILE (WEBSCRAPER)
 
-ALEXANDER LUND e201279 - THESIS ESCP
+ALEXANDER LUND - THESIS ESCP
 
 """
 
@@ -22,7 +22,7 @@ import tweepy
 
 """nltk.download("brown")"""
 
-################# REDDIT #################
+################# REDDIT SENTIMENTS SCRAPING #################
 
 
 reddit = praw.Reddit(client_id="***",
@@ -108,7 +108,7 @@ timestamp2 = pd.Series(subcommentsdf[subcommentsdf.columns[1::2]].values.ravel()
 
 subcomdf = pd.concat([body2.rename("body"), timestamp2.rename("timestamp")], axis = 1).dropna()
 
-# key search words scraping
+# key searchwords scraping
 targetsearchwords = ["esg", "sustainable investing", "responsible investment", "impact investing", "sustainable finance", "green finance", "corporate social responsibility", "esg investing", "socially responsible investing", "climate funds", "portfolio carbon footprint", "carbon finance", "positive screening", "best in class ESG", "sustainability index", "thematic investing", "triple bottom line"]
 
 searchposts = OrderedDict.fromkeys(targetsearchwords,[])
@@ -147,22 +147,44 @@ timestamp3 = pd.Series(searchwordsdf[searchwordsdf.columns[1::2]].values.ravel()
 
 searchwddf = pd.concat([body3.rename("body"), timestamp3.rename("timestamp")], axis = 1).dropna()
 
+
+# key searchwords comments scraping
+searchcomments = OrderedDict.fromkeys(targetsearchwords,[])
+
+dsearchcomments = defaultdict(list)
+
+for keys in searchposts:
+    for sub in reddit.subreddit("all").search(keys):
+        for top_level_comment in sub.comments[1:]:
+            if isinstance(top_level_comment, MoreComments):
+                continue
+            dsearchcomments[keys].append(top_level_comment.body)
+            dsearchcomments[keys].append(top_level_comment.created_utc)
+
+searchcommentsdf = pd.DataFrame().from_dict(dsearchcomments, orient="index")
+
+searchcommentsdf = searchcommentsdf.transpose()
+
+searchcommentsdf = pd.DataFrame(searchcommentsdf.values.reshape(-1, len(columns2)), columns = [columns2])
+
+searchcommentsdf = searchcommentsdf.reindex(columns= [order2])
+
+body4 = pd.Series(searchcommentsdf[searchcommentsdf.columns[::2]].values.ravel())
+
+timestamp4 = pd.Series(searchcommentsdf[searchcommentsdf.columns[1::2]].values.ravel())
+
+searchcomdf = pd.concat([body4.rename("body"), timestamp4.rename("timestamp")], axis = 1).dropna()
+
 print("Scraping Done!")
 
+#final concat, cleaning removed and deleted comments/posts & convert df to csv
+redditdf = pd.concat((subreddf, subcomdf, searchwddf, searchcomdf), axis=0)
 
+posts = pd.DataFrame(redditdf,columns=["body"])
 
+indexNames = posts[(posts.body == '[removed]') | (posts.body == '[deleted]')].index
 
-"""textualanalysis = []
+posts.drop(indexNames, inplace=True)
 
-for values in dsubreddits.values():
-    textualanalysis.append(values)
-
-for values in dsearchwords.values():
-    textualanalysis.append(values)"""
-
-"""listToStr = ' '.join(map(str, textualanalysis))
-
-blob = TextBlob(textualanalysis)
-
-print(blob.word_counts)"""
+redditdf.to_csv("~/Desktop/reddit-sentiments.csv")
 

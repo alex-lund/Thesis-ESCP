@@ -1,6 +1,6 @@
 """
 
-DATA SOURCING FILE (WEBSCRAPER)
+DATA SOURCING FILE (REDDIT WEBSCRAPER)
 
 ALEXANDER LUND - THESIS ESCP
 
@@ -16,9 +16,7 @@ from collections import OrderedDict
 from collections import defaultdict
 from prawcore.exceptions import Forbidden
 from textblob import TextBlob
-import nltk
-from twitter_scraper import get_tweets
-import tweepy
+
 
 """nltk.download("brown")"""
 
@@ -109,7 +107,7 @@ timestamp2 = pd.Series(subcommentsdf[subcommentsdf.columns[1::2]].values.ravel()
 subcomdf = pd.concat([body2.rename("body"), timestamp2.rename("timestamp")], axis = 1).dropna()
 
 # key searchwords scraping
-targetsearchwords = ["esg", "sustainable investing", "responsible investment", "impact investing", "sustainable finance", "green finance", "corporate social responsibility", "esg investing", "socially responsible investing", "climate funds", "portfolio carbon footprint", "carbon finance", "positive screening", "best in class ESG", "sustainability index", "thematic investing", "triple bottom line"]
+targetsearchwords = ["esg", "sustainable investing", "responsible investment", "impact investing", "sustainable finance", "green finance", "corporate social responsibility", "esg investing", "socially responsible investing", "climate funds", "portfolio carbon footprint", "carbon finance", "positive screening", "best in class ESG", "sustainability index", "thematic investing", "triple bottom line", "greenwashing"]
 
 searchposts = OrderedDict.fromkeys(targetsearchwords,[])
 

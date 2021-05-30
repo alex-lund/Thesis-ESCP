@@ -21,7 +21,18 @@ stopw = stopwords.words("english")
 
 df["body"] = df["body"].astype(str)
 
-df["cleaned body"] = df["body"].apply(lambda x: " ".join([word for word in x.split() if word.lower() not in (stopw)]))
+df = df.drop(df.index[[3009]])
+
+f"""or row in df[2942:3791]:
+    if str(df["body"]).startswith("1"):
+        df["body"][row].replace(to_replace=df["body"][row].values, value=df["timestamp"][row].values, inplace=True)
+        df["timestamp"][row].replace(to_replace=df["timestamp"][row].values, value=df["body"][row].values, inplace=True)
+"""
+
+df.loc[df[2942:3791],'body','timestamp'] = df.loc[df[2942:3791],'timestamp','body'].values
+
+
+"""df["cleaned body"] = df["body"].apply(lambda x: " ".join([word for word in x.split() if word.lower() not in (stopw)]))
 
 df["cleaned body"] = df["cleaned body"].str.replace('[^\w\s]','')
 
@@ -59,7 +70,9 @@ df["Subjectivity"] =  df["cleaned body"].apply(getSubjectivity)
 df["Polarity"] = df["cleaned body"].apply(getPolarity)
 
 df["ESG relevant Polarity"] = df[["esg relevant"]].multiply(df["Polarity"], axis = "index")
+"""
 
-df.to_csv("~/Desktop/processed-text-thesis.csv")
+
+#df.to_csv("~/Desktop/processed-text-thesis.csv")
 
 

@@ -23,15 +23,20 @@ df["body"] = df["body"].astype(str)
 
 df = df.drop(df.index[[3009]])
 
-f"""or row in df[2942:3791]:
+
+###### POUR MARTHA ########
+#première tentative
+for row in df.loc[2942:3791]:
     if str(df["body"]).startswith("1"):
         df["body"][row].replace(to_replace=df["body"][row].values, value=df["timestamp"][row].values, inplace=True)
         df["timestamp"][row].replace(to_replace=df["timestamp"][row].values, value=df["body"][row].values, inplace=True)
-"""
 
+#deuxième tentative
 df.loc[df[2942:3791],'body','timestamp'] = df.loc[df[2942:3791],'timestamp','body'].values
+###### POUR MARTHA ########
 
 
+# le reste cest du processing que je gère
 """df["cleaned body"] = df["body"].apply(lambda x: " ".join([word for word in x.split() if word.lower() not in (stopw)]))
 
 df["cleaned body"] = df["cleaned body"].str.replace('[^\w\s]','')

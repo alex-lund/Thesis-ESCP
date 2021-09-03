@@ -34,6 +34,7 @@ date_since = "2020-05-19"
 
 shortsearch = OrderedDict.fromkeys(shortsearchwords, [])
 tweets = defaultdict(list)
+date =
 
 numberoftweets = 5
 

@@ -114,7 +114,6 @@ ESG.reset_index(inplace=True)
 #ESG = ESG[(ESG['datetime'] < '2020-02-01') & (ESG['datetime'] < '2020-06-01')]
 
 print("Correlation between polarity and ESG delta on intraday basis:",ESG["own polarity"].corr(ESG["Delta"]))
-print("Correlation between polarity and SIN delta on intraday basis:",SIN["own polarity"].corr(SIN["Delta"]))
 
 a = ESG["own polarity"]
 b = ESG["Delta"]
@@ -123,12 +122,15 @@ ESGttest = ttest(a, b)
 
 print(ESGttest)
 
+print("Correlation between polarity and SIN delta on intraday basis:",SIN["own polarity"].corr(SIN["Delta"]))
+
 c = SIN["own polarity"]
 d = SIN["Delta"]
 
 SINttest = ttest(c, d)
 
 print(SINttest)
+print("\n")
 
 ESGlag1 = ESG
 ESGlag1[["Delta", "standard_delta", "minmax_std_delta"]] = ESG[["Delta", "standard_delta", "minmax_std_delta"]].shift(1)
@@ -153,6 +155,7 @@ d1 = SINlag1["Delta"]
 SINlag1ttest = ttest(c1, d1)
 
 print(SINlag1ttest)
+print("\n")
 
 ESGlag2 = ESG
 ESGlag2[["Delta", "standard_delta", "minmax_std_delta"]] = ESG[["Delta", "standard_delta", "minmax_std_delta"]].shift(15)
@@ -177,6 +180,7 @@ d2 = SINlag2["Delta"]
 SINlag2ttest = ttest(c2, d2)
 
 print(SINlag2ttest)
+print("\n")
 
 ESGlag3 = ESG
 ESGlag3[["Delta", "standard_delta", "minmax_std_delta"]] = ESG[["Delta", "standard_delta", "minmax_std_delta"]].shift(30)

@@ -126,7 +126,7 @@ df["datetime"] = df["timestamp"].apply(getTimestamp)
 
 df.dropna(axis=0, inplace=True)
 
-df.drop(columns=["timestamp", "body", "esg relevant", "lexicon based positives", "lexicon based negatives", "body word count"], inplace=True)
+df.drop(columns=["timestamp", "esg relevant", "lexicon based positives", "lexicon based negatives"], inplace=True)
 
 print(df.info())
 
@@ -135,9 +135,14 @@ filt_neg = df["own polarity"] < 0
 filt_zero = df["own polarity"] == 0
 
 df["polarity_sign"] = "undefined"
+df["polarity_direction"] = "undefined"
 
 df.loc[filt_pos, "polarity_sign"]=1
 df.loc[filt_neg, "polarity_sign"]=-1
 df.loc[filt_zero, "polarity_sign"]=0
+
+df.loc[filt_pos, "polarity_direction"]="esg-bullish"
+df.loc[filt_neg, "polarity_direction"]="esg-bearish"
+df.loc[filt_zero, "polarity_direction"]="esg-neutral"
 
 df.to_csv("4. processed-reddit-text-thesis.csv")

@@ -21,6 +21,7 @@ import plotly.io as pio
 pio.renderers.default = "browser"
 import statsmodels.api as sm
 from scipy.stats import spearmanr
+from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.arima_model import ARIMA
 from scipy.stats import norm
 from scipy.stats import shapiro
@@ -38,21 +39,16 @@ redditdf["datetime"] = pd.to_datetime(redditdf["datetime"]).dt.date
 
 
 ### graphing of polarity
-redditgraphdf = redditdf.groupby("datetime").mean()
+"""redditgraphdf = redditdf.groupby("datetime").mean()
 redditgraphdf.reset_index(inplace=True)
-
-
-#print(NLPdfnew["own polarity"].value_counts())
 
 redditgraph = px.line(redditgraphdf,x="datetime",y="own polarity")
 redditgraphsign = px.line(redditgraphdf,x="datetime",y="polarity_sign")
 
-
-"""
 redditgraph.show()
-redditgraphsign.show()
+redditgraphsign.show()"""
 
-"""
+
 # fund information and computation of delta
 InvescoESG = yfinance.Ticker("ESG") #tried with ESG, SUSA, ICLN, ESGV, ESGD, PBD, WOOD, EVX, RNRG => all funds return same correlation pattern with sentiment-polarity
 
@@ -68,7 +64,7 @@ for i in ['Open', 'High', 'Close', 'Low']:
 invescoESGdf["Delta"] = invescoESGdf["Close"] - invescoESGdf["Open"]
 
 
-sin = yfinance.Ticker("VICE")
+sin = yfinance.Ticker("PM") #tried with PM, ITA, EAFE, LMT, BP,  XOP, XLE, VDE
 
 sin = sin.history(start='2010-1-1', end='2021-1-1')
 
@@ -103,40 +99,38 @@ SINdf["Date"] = pd.to_datetime(SINdf["Date"]).dt.date
 SINdf.rename(columns={"Date": "datetime"}, inplace=True)
 
 # merger / creation of ESG dataset (combination of NLP polarity data with etf delta)
-ESG_reddit = redditdf.merge(ESGdf, on="datetime")
-SIN_reddit = redditdf.merge(SINdf, on="datetime")
+ESG = redditdf.merge(ESGdf, on="datetime")
+SIN = redditdf.merge(SINdf, on="datetime")
 
 
 # computation of mean polarity groupedby date, meaning we take average polarity for each day to avoid granularity
-ESG = ESG_reddit.groupby("datetime").mean()
+ESG = ESG.groupby("datetime").mean()
 ESG.reset_index(inplace=True)
 
-SIN = SIN_reddit.groupby("datetime").mean()
+SIN = SIN.groupby("datetime").mean()
 SIN.reset_index(inplace=True)
 
 """ESG.drop(columns=["polarity_sign"], inplace=True)
 SIN.drop(columns=["polarity_sign"], inplace=True)"""
 
 
-
-
 ### MEANS, STDEVs & HISTOGRAMS ###
 
 #for ESG
-ESG_polarity_hist = ESG.hist(column="own polarity")
+"""ESG_polarity_hist = ESG.hist(column="own polarity")
 plt.show()
 
 ESG_Delta_hist = ESG.hist(column="Delta")
-plt.show()
+plt.show()"""
 
 #for SIN
 """
 SIN_polarity_hist = SIN.hist(column="own polarity")
 plt.show()
-"""
+
 SIN_Delta_hist = SIN.hist(column="Delta")
 plt.show()
-
+"""
 print(shapiro(ESG["own polarity"]))
 print(shapiro(ESG["Delta"]))
 
@@ -183,8 +177,25 @@ SIN.loc[filt_pos4, "fund-direction"]= "Increase"
 SIN.loc[filt_neg4, "fund-direction"]= "Decrease"
 SIN.loc[filt_zero4, "fund-direction"]= "Constant"
 
-#### SPEARMAN CORRELATION ASSESSMENT (CONTINOUS-CONTINUOUS) #######
 
+#### ARIMA ####
+
+ESGARIMA = ESG.drop(columns=["body word count", "polarity_sign", "sentiment-direction", "fund-direction"])
+ESGARIMA.set_index("datetime",inplace=True)
+
+adf_pola = adfuller(ESGARIMA["own polarity"])
+adf_delta = adfuller(ESGARIMA["Delta"])
+
+print(adf_pola)
+print(adf_delta)
+
+"""ESGARIMA.plot()
+plt.show()"""
+
+
+
+#### SPEARMAN CORRELATION ASSESSMENT (CONTINOUS-CONTINUOUS) #######
+"""
 # FOR ESG
 ESG_corr = spearmanr(ESG["own polarity"],ESG["Delta"])
 
@@ -247,8 +258,109 @@ SINrollingavg_corr = spearmanr(SINrollingavg["rolling_avg_polarity"],SINrollinga
 print("SIN-Sentiment correlation on 5 day rolling average lag basis: ", SINrollingavg_corr)
 
 print("\n")
-
+"""
 #### LOGISTIC APPROACH (CONTINUOUS-CATEGORICAL) #######
+
+### Multinomial Logistic Regression ###
+"""
+## FOR ESG
+
+
+ESG_logit = ESG.copy(deep=False)
+ESG_logit_reactive = ESG.copy(deep=False)
+ESG_logit_proactive = ESG.copy(deep=False)
+
+# non-lagged
+ESG_logit = ESG_logit.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"])
+ESG_logit = pd.get_dummies(data=ESG_logit, prefix="", columns=["sentiment-direction"])
+
+ESG_log_Y = ESG_logit[["_Neutral", "_Bullish", "_Bearish"]]
+ESG_log_X = ESG_logit.drop(columns=[ "_Bearish", "_Bullish", "_Neutral"])
+
+logit_model_esg =sm.MNLogit(ESG_log_Y,sm.add_constant(ESG_log_X))
+result1=logit_model_esg.fit()
+stats1=result1.summary()
+print(stats1)
+print(stats1.as_latex())
+
+# reactive
+ESG_logit_reactive = ESG_logit_reactive["sentiment-direction"].shift(-1)
+ESG_logit_reactive = ESG_logit_reactive.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"])
+ESG_logit_reactive = pd.get_dummies(data=ESG_logit_reactive, prefix="", columns=["sentiment-direction"])
+
+ESG_log_Y_reactive = ESG_logit_reactive[["_Neutral", "_Bullish", "_Bearish"]]
+ESG_log_X_reactive = ESG_logit_reactive.drop(columns=[ "_Bearish", "_Bullish", "_Neutral"])
+
+logit_model_esg_reac =sm.MNLogit(ESG_log_Y_reactive,sm.add_constant(ESG_log_X_reactive))
+result2=logit_model_esg_reac.fit()
+stats2=result2.summary()
+print(stats2)
+print(stats2.as_latex())
+
+# proactive
+ESG_logit_proactive = ESG_logit_proactive["sentiment-direction"].shift(1)
+ESG_logit_proactive = ESG_logit_proactive.dropna()
+ESG_logit_proactive = ESG_logit_proactive.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"])
+ESG_logit_proactive = pd.get_dummies(data=ESG_logit_proactive, prefix="", columns=["sentiment-direction"])
+
+ESG_log_Y_proactive = ESG_logit_proactive[["_Neutral", "_Bullish", "_Bearish"]]
+ESG_log_X_proactive = ESG_logit_proactive.drop(columns=[ "_Bearish", "_Bullish", "_Neutral"])
+
+logit_model_esg_proac =sm.MNLogit(ESG_log_Y_proactive,sm.add_constant(ESG_log_X_proactive))
+result3=logit_model_esg_proac.fit()
+stats3=result3.summary()
+print(stats3)
+print(stats3.as_latex())
+
+## FOR SIN
+
+SIN_logit = SIN.copy(deep=False)
+SIN_logit_reactive = SIN.copy(deep=False)
+SIN_logit_proactive = SIN.copy(deep=False)
+
+# non-lagged
+SIN_logit = SIN_logit.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"])
+SIN_logit = pd.get_dummies(data=SIN_logit, prefix="", columns=["sentiment-direction"])
+
+SIN_log_Y = SIN_logit[["_Neutral", "_Bullish", "_Bearish"]]
+SIN_log_X = SIN_logit.drop(columns=[ "_Bearish", "_Bullish", "_Neutral"])
+
+logit_model_sin = sm.MNLogit(SIN_log_Y,sm.add_constant(SIN_log_X))
+result4 = logit_model_sin.fit()
+stats4 = result4.summary()
+print(stats4)
+print(stats4.as_latex())
+
+# reactive
+SIN_logit_reactive = SIN_logit_reactive["sentiment-direction"].shift(-1)
+SIN_logit_reactive = SIN_logit_reactive.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"])
+SIN_logit_reactive = pd.get_dummies(data=SIN_logit_reactive, prefix="", columns=["sentiment-direction"])
+
+SIN_log_Y_reactive = SIN_logit_reactive[["_Neutral", "_Bullish", "_Bearish"]]
+SIN_log_X_reactive = SIN_logit_reactive.drop(columns=[ "_Bearish", "_Bullish", "_Neutral"])
+
+logit_model_sin_reac =sm.MNLogit(SIN_log_Y_reactive,sm.add_constant(SIN_log_X_reactive))
+result5=logit_model_sin_reac.fit()
+stats5=result5.summary()
+print(stats5)
+print(stats5.as_latex())
+
+# proactive
+SIN_logit_proactive = SIN_logit_proactive["sentiment-direction"].shift(1)
+SIN_logit_proactive.dropna()
+SIN_logit_proactive = SIN_logit_proactive.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"])
+SIN_logit_proactive = pd.get_dummies(data=SIN_logit_proactive, prefix="", columns=["sentiment-direction"])
+
+SIN_log_Y_proactive = SIN_logit_proactive[["_Neutral", "_Bullish", "_Bearish"]]
+SIN_log_X_proactive = SIN_logit_proactive.drop(columns=[ "_Bearish", "_Bullish", "_Neutral"])
+
+logit_model_sin_proac = sm.MNLogit(SIN_log_Y_proactive,sm.add_constant(SIN_log_X_proactive))
+result6 = logit_model_sin_proac.fit()
+stats6 = result6.summary()
+print(stats6)
+print(stats6.as_latex())
+"""
+### Binomial Logistic Regression ###
 
 # FOR ESG
 """
@@ -426,8 +538,6 @@ print("SIN Logit Proactive Neutral Latex Results: ")
 print(SINneutrallogitproactive.summary().as_latex())
 print("\n")"""
 
-
-###
 
 #### LOGISTIC APPROACH (CATEGORICAL-CATEGORICAL) #######
 

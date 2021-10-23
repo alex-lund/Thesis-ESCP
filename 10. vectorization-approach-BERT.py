@@ -69,25 +69,25 @@ for k, v in clusters.items():
     print(k, ": ", v[0:8], "...", len(v))
 
 totalwords = [word for v in clusters.values() for word in v]
-X = nlp[totalwords]
+cluster_words = nlp[totalwords]
 
 ### graphing
 
 pca = manifold.TSNE(perplexity=40, n_components=2, init='pca')
-X = pca.fit_transform(X)
+cluster_pca = pca.fit_transform(cluster_words)
 
 
 df = pd.DataFrame()
 for k, v in clusters.items():
     size=len(df) + len(v)
-    df_group = pd.DataFrame(X[len(df):size], columns=["x","y"],index=v)
+    df_group = pd.DataFrame(cluster_pca[len(df):size], columns=["x","y"],index=v)
     df_group["cluster"] = k
     df = df.append(df_group)
-
+"""
 fig, ax = plt.subplots()
 sns.scatterplot(data=df, x="x", y="y", hue="cluster", ax=ax)
 
-"""ax.legend().texts[0].set_text(None)
+ax.legend().texts[0].set_text(None)
 ax.set(xlabel=None, ylabel=None, xticks=[], xticklabels=[],
        yticks=[], yticklabels=[])
 for i in range(len(df)):
@@ -120,7 +120,29 @@ X = np.array(lst_mean_vecs)
 dic_y = {k:utils_bert_embedding(v, tokenizer, nlp_).mean(0) for k,v
          in clusters.items()}
 
-similarities = np.array([metrics.pairwise.cosine_similarity(X, y).T.tolist()[0]
-                         for y in dic_y.values()]
-                        ).reshape(-1,1)
+y = list(dic_y.values())
 
+Y = np.array(y)
+
+similarities = np.array([metrics.pairwise.cosine_similarity(X, Y).T]).T
+
+labels = list(dic_y.keys())
+
+### adjust and rescale
+for i in range(len(similarities)):
+    ### assign randomly if there is no similarity
+    if sum(similarities[i]) == 0:
+       similarities[i] = [0]*len(labels)
+       similarities[i][np.random.choice(range(len(labels)))] = 1
+    ### rescale so they sum = 1
+    similarities[i] = similarities[i] / sum(similarities[i])
+
+
+predicted_prob = similarities
+predicted = [labels[np.argmax(pred)] for pred in predicted_prob]
+
+bertlabels = pd.DataFrame({"BERT-label": pd.Series(predicted)})
+
+newreddit = reddit.join(bertlabels)
+
+newreddit.to_csv("bert-predictions-labels-reddit.csv")

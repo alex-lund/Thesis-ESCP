@@ -50,7 +50,7 @@ redditgraphsign.show()"""
 
 
 # fund information and computation of delta
-ESG_yf = yfinance.Ticker("ESGV") #tried with ESG, SUSA, ICLN, ESGV, ESGD, PBD, WOOD, EVX, RNRG => all funds return same correlation pattern with sentiment-polarity
+ESG_yf = yfinance.Ticker("ESG") #tried with ESG, SUSA, ICLN, ESGV, ESGD, PBD, WOOD, EVX, RNRG => all funds return same correlation pattern with sentiment-polarity
 
 ESG_yf = ESG_yf.history(start='2010-1-1', end='2021-1-1') #(start='2010-1-1', end='2021-1-1')
 
@@ -64,7 +64,7 @@ for i in ['Open', 'High', 'Close', 'Low']:
 ESG_yf["Delta"] = ESG_yf["Close"] - ESG_yf["Open"]
 
 
-sin = yfinance.Ticker("PM") #tried with PM, ITA, EAFE, LMT, BP,  XOP, XLE, VDE
+sin = yfinance.Ticker("VICE") #tried with VICE, PM, ITA, EAFE, LMT, BP,  XOP, XLE, VDE
 
 sin = sin.history(start='2010-1-1', end='2021-1-1')
 

@@ -50,18 +50,18 @@ redditgraphsign.show()"""
 
 
 # fund information and computation of delta
-InvescoESG = yfinance.Ticker("ESG") #tried with ESG, SUSA, ICLN, ESGV, ESGD, PBD, WOOD, EVX, RNRG => all funds return same correlation pattern with sentiment-polarity
+ESG_yf = yfinance.Ticker("ESGV") #tried with ESG, SUSA, ICLN, ESGV, ESGD, PBD, WOOD, EVX, RNRG => all funds return same correlation pattern with sentiment-polarity
 
-invescoESGdf = InvescoESG.history(start='2010-1-1', end='2021-1-1') #(start='2010-1-1', end='2021-1-1')
+ESG_yf = ESG_yf.history(start='2010-1-1', end='2021-1-1') #(start='2010-1-1', end='2021-1-1')
 
-invescoESGdf = invescoESGdf.drop(columns=["Volume", "Dividends", "Stock Splits"])
+ESG_yf = ESG_yf.drop(columns=["Volume", "Dividends", "Stock Splits"])
 
-invescoESGdf = invescoESGdf.reset_index()
+ESG_yf = ESG_yf.reset_index()
 
 for i in ['Open', 'High', 'Close', 'Low']:
-      invescoESGdf[i]  =  invescoESGdf[i].astype('float64')
+      ESG_yf[i]  =  ESG_yf[i].astype('float64')
 
-invescoESGdf["Delta"] = invescoESGdf["Close"] - invescoESGdf["Open"]
+ESG_yf["Delta"] = ESG_yf["Close"] - ESG_yf["Open"]
 
 
 sin = yfinance.Ticker("PM") #tried with PM, ITA, EAFE, LMT, BP,  XOP, XLE, VDE
@@ -79,16 +79,16 @@ sin["Delta"] = sin["Close"] - sin["Open"]
 
 
 
-"""fig = go.Figure(data=[go.Candlestick(x=invescoESGdf["Date"],
-                                     open= invescoESGdf["Open"],
-                                     high= invescoESGdf["High"],
-                                     low= invescoESGdf["Low"],
-                                     close= invescoESGdf["Close"])])
+fig = go.Figure(data=[go.Candlestick(x=ESG_yf["Date"],
+                                     open= ESG_yf["Open"],
+                                     high= ESG_yf["High"],
+                                     low= ESG_yf["Low"],
+                                     close= ESG_yf["Close"])])
 
-fig.show()"""
+fig.show()
 
 # removal of unnecessary info from both ESG & SIN etfs
-ESGdf = invescoESGdf.drop(columns=["Open", "High", "Low", "Close"])
+ESGdf = ESG_yf.drop(columns=["Open", "High", "Low", "Close"])
 
 ESGdf["Date"] = pd.to_datetime(ESGdf["Date"]).dt.date
 ESGdf.rename(columns={"Date": "datetime"}, inplace=True)

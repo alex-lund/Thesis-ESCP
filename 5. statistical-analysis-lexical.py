@@ -547,7 +547,7 @@ ESG_chi = ESG.drop(columns=["datetime","own polarity", "Delta"])
 ESG_contingency = pd.crosstab(index=ESG_chi["sentiment-direction"], columns=ESG_chi["fund-direction"])
 print(ESG_contingency)
 
-ESG_observed = np.array([[17, 80, 79], [18, 83, 88], [7, 18, 13]])
+ESG_observed = [ESG_contingency.to_numpy()[0], ESG_contingency.to_numpy()[1]]
 ESG_chi_val, ESG_p_val, ESG_dof, ESG_expected = chi2_contingency(ESG_observed)
 print(ESG_chi_val, ESG_p_val, ESG_dof, ESG_expected)
 
@@ -557,7 +557,7 @@ SIN_chi = SIN.drop(columns=["datetime","own polarity", "Delta"])
 SIN_contingency = pd.crosstab(index=SIN_chi["sentiment-direction"], columns=SIN_chi["fund-direction"])
 print(SIN_contingency)
 
-SIN_observed = np.array([[1, 88, 78], [2, 75, 85], [0, 18, 11]])
+SIN_observed = [SIN_contingency.to_numpy()[0], SIN_contingency.to_numpy()[1]]
 SIN_chi_val, SIN_p_val, SIN_dof, SIN_expected = chi2_contingency(SIN_observed)
 print(SIN_chi_val, SIN_p_val, SIN_dof, SIN_expected)
 

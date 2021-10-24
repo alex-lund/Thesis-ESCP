@@ -95,9 +95,27 @@ SIN.loc[filt_pos4, "fund-direction"]= "Increase"
 SIN.loc[filt_neg4, "fund-direction"]= "Decrease"
 SIN.loc[filt_zero4, "fund-direction"]= "Constant"
 
+ESG = ESG[ESG["fund-direction"] != "Constant"]
 
-
+SIN = SIN[SIN["fund-direction"] != "Constant"]
 
 ESG_contingency = pd.crosstab(index=ESG["BERT-label"], columns=ESG["fund-direction"])
 print(ESG_contingency)
+print("\n")
+
+print(ESG_contingency.to_latex())
+
+ESG_observed = [ESG_contingency.to_numpy()[0], ESG_contingency.to_numpy()[1]]
+ESG_chi_val, ESG_p_val, ESG_dof, ESG_expected = chi2_contingency(ESG_observed)
+print(ESG_chi_val, ESG_p_val, ESG_dof, ESG_expected)
+
+SIN_contingency = pd.crosstab(index=SIN["BERT-label"], columns=SIN["fund-direction"])
+print(SIN_contingency)
+print("\n")
+
+print(SIN_contingency.to_latex())
+
+SIN_observed = [SIN_contingency.to_numpy()[0], SIN_contingency.to_numpy()[1]]
+SIN_chi_val, SIN_p_val, SIN_dof, SIN_expected = chi2_contingency(SIN_observed)
+print(SIN_chi_val, SIN_p_val, SIN_dof, SIN_expected)
 

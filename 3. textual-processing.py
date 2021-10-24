@@ -145,4 +145,6 @@ df.loc[filt_pos, "polarity_direction"]="esg-bullish"
 df.loc[filt_neg, "polarity_direction"]="esg-bearish"
 df.loc[filt_zero, "polarity_direction"]="esg-neutral"
 
+df = df[df["own subjectivity"] != 0]
+
 df.to_csv("4. processed-reddit-text-thesis.csv")

@@ -34,7 +34,7 @@ reddit.drop(reddit[reddit["body word count"] > 80].index, inplace = True)
 tweet_nlp = twitter[["corpus", "target"]]
 
 # determination of relevant keywords for labelling
-nlp = gensim_api.load("glove-wiki-gigaword-300")
+glove = gensim_api.load("glove-wiki-gigaword-300")
 """
 esgpositive = nlp.most_similar(positive=["bullish", "sustainable", "investing", "esg", "positive", "impact", "green", "reduce", "emissions"],
                                negative=["bearish", "pollution", "greenwash", "negative", "destroy"],
@@ -59,17 +59,17 @@ clusters ={}
 
 clusters["esg-bullish"] = get_similar_words(["bullish", "sustainable", "investing", "esg", "positive", "impact", "green", "reduce", "emissions"],
                                ["bearish", "pollution", "greenwash", "negative", "destroy"],
-                               top=30, nlp=nlp)
+                               top=30, nlp=glove)
 
 clusters["esg-bearish"] = get_similar_words(["bearish", "unsustainable", "pollute", "greenwash", "negative", "harmful"],
                                ["bullish"],
-                               top=30, nlp=nlp)
+                               top=30, nlp=glove)
 
 for k, v in clusters.items():
     print(k, ": ", v[0:8], "...", len(v))
 
 totalwords = [word for v in clusters.values() for word in v]
-cluster_words = nlp[totalwords]
+cluster_words = glove[totalwords]
 
 ### graphing
 
@@ -99,6 +99,7 @@ for i in range(len(df)):
 plt.show()"""
 
 
+### BERT tokenization
 
 tokenizer = transformers.BertTokenizer.from_pretrained("bert-base-uncased", do_lower_case=True)
 

@@ -52,5 +52,5 @@ df = pd.DataFrame(tweets, columns=['Tweet', '@ Date'])
 
 print(df)
 
-df.to_csv("7. raw-twitter-sentiments.csv")
+df.to_csv("raw-twitter-sentiments.csv")
 

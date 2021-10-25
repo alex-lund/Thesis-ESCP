@@ -64,7 +64,7 @@ for i in ['Open', 'High', 'Close', 'Low']:
 ESG_yf["Delta"] = ESG_yf["Close"] - ESG_yf["Open"]
 
 
-sin = yfinance.Ticker("VICE") #tried with VICE, PM, ITA, EAFE, LMT, BP,  XOP, XLE, VDE
+sin = yfinance.Ticker("VICE") #tried with VICE, PM, ITA, MON, LMT, BP,  XOP, XLE, VDE
 
 sin = sin.history(start='2010-1-1', end='2021-1-1')
 

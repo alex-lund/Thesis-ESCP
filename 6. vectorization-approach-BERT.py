@@ -24,7 +24,7 @@ from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 
 reddit = pd.read_csv("4. processed-reddit-text-thesis.csv")
-twitter = pd.read_csv("9. processed-twitter-text-thesis.csv")
+twitter = pd.read_csv("processed-twitter-text-thesis.csv")
 
 twitter.drop(columns=["Unnamed: 0.1", "Tweet", "lexicon based positives", "lexicon based negatives", "body word count", "own polarity", "own subjectivity"], inplace=True)
 twitter.rename(columns={"@ Date": "datetime", "Unnamed: 0": "Index", "cleaned list": "corpus", "sentiment-direction": "target"}, inplace=True)

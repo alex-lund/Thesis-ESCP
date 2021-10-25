@@ -18,7 +18,7 @@ from sklearn import model_selection, naive_bayes, svm, neural_network
 
 ############# TWITTER ####################
 
-df = pd.read_csv("7. raw-twitter-sentiments.csv")
+df = pd.read_csv("raw-twitter-sentiments.csv")
 
 stopw = stopwords.words("english")
 
@@ -82,4 +82,4 @@ df.loc[filt_pos, "sentiment-direction"]= "Bullish"
 df.loc[filt_neg, "sentiment-direction"]= "Bearish"
 df.loc[filt_zero, "sentiment-direction"]= "Neutral"
 
-df.to_csv("9. processed-twitter-text-thesis.csv")
+df.to_csv("processed-twitter-text-thesis.csv")

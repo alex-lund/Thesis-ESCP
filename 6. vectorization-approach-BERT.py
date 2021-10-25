@@ -146,4 +146,4 @@ bertlabels = pd.DataFrame({"BERT-label": pd.Series(predicted)})
 
 newreddit = reddit.join(bertlabels)
 
-newreddit.to_csv("bert-predictions-labels-reddit.csv")
+newreddit.to_csv("7. bert-predictions-labels-reddit.csv")

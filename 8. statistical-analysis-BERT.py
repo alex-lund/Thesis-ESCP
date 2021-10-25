@@ -22,7 +22,7 @@ from scipy.stats import shapiro
 from scipy.stats import chi2_contingency
 from bioinfokit.analys import stat
 
-df = pd.read_csv("bert-predictions-labels-reddit.csv")
+df = pd.read_csv("7. bert-predictions-labels-reddit.csv")
 
 df.drop(columns=["Unnamed: 0", "Unnamed: 0.1", "Unnamed: 0.1.1", "body", "body word count", "own polarity", "own subjectivity", "polarity_sign"], inplace=True)
 df.dropna(inplace=True)

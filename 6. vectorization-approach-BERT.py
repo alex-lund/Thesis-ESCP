@@ -85,7 +85,7 @@ def utils_bert_embedding(txt, tokenizer, nlp):
 ## create list of news vector
 lst_mean_vecs = [utils_bert_embedding(txt, tokenizer, nlp_).mean(0)
                  for txt in reddit["body"]]
-## create the feature matrix (n news x 768)
+## create the feature matrix (n x 768)
 X = np.array(lst_mean_vecs)
 
 dic_y = {k:utils_bert_embedding(v, tokenizer, nlp_).mean(0) for k,v

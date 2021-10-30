@@ -1,6 +1,6 @@
 """
 
-VECTORIZATION APPROACH + MACHINE LEARNING PREDICTION
+VECTORIZATION APPROACH BERT
 
 ALEXANDER LUND - THESIS ESCP
 
@@ -68,36 +68,6 @@ clusters["esg-bearish"] = get_similar_words(["bearish", "unsustainable", "pollut
 for k, v in clusters.items():
     print(k, ": ", v[0:8], "...", len(v))
 
-totalwords = [word for v in clusters.values() for word in v]
-cluster_words = glove[totalwords]
-
-### graphing
-
-pca = manifold.TSNE(perplexity=40, n_components=2, init='pca')
-cluster_pca = pca.fit_transform(cluster_words)
-
-
-df = pd.DataFrame()
-for k, v in clusters.items():
-    size=len(df) + len(v)
-    df_group = pd.DataFrame(cluster_pca[len(df):size], columns=["x","y"],index=v)
-    df_group["cluster"] = k
-    df = df.append(df_group)
-"""
-fig, ax = plt.subplots()
-sns.scatterplot(data=df, x="x", y="y", hue="cluster", ax=ax)
-
-ax.legend().texts[0].set_text(None)
-ax.set(xlabel=None, ylabel=None, xticks=[], xticklabels=[],
-       yticks=[], yticklabels=[])
-for i in range(len(df)):
-    ax.annotate(df.index[i],
-               xy=(df["x"].iloc[i],df["y"].iloc[i]),
-               xytext=(5,2), textcoords='offset points',
-               ha='right', va='bottom')
-
-plt.show()"""
-
 
 ### BERT tokenization
 
@@ -131,11 +101,9 @@ labels = list(dic_y.keys())
 
 ### adjust and rescale
 for i in range(len(similarities)):
-    ### assign randomly if there is no similarity
     if sum(similarities[i]) == 0:
        similarities[i] = [0]*len(labels)
        similarities[i][np.random.choice(range(len(labels)))] = 1
-    ### rescale so they sum = 1
     similarities[i] = similarities[i] / sum(similarities[i])
 
 

@@ -50,7 +50,7 @@ redditgraphsign.show()"""
 
 
 # fund information and computation of delta
-ESG_yf = yfinance.Ticker("ESG") #tried with ESG, SUSA, ICLN, ESGV, ESGD, PBD, WOOD, EVX, RNRG => all funds return same correlation pattern with sentiment-polarity
+ESG_yf = yfinance.Ticker("SUSA") #tried with ESG, SUSA, ICLN, ESGV, ESGD, PBD, WOOD, EVX, RNRG => all funds return same correlation pattern with sentiment-polarity
 
 ESG_yf = ESG_yf.history(start='2010-1-1', end='2021-1-1') #(start='2010-1-1', end='2021-1-1')
 
@@ -79,13 +79,13 @@ sin["Delta"] = sin["Close"] - sin["Open"]
 
 
 
-fig = go.Figure(data=[go.Candlestick(x=ESG_yf["Date"],
+"""fig = go.Figure(data=[go.Candlestick(x=ESG_yf["Date"],
                                      open= ESG_yf["Open"],
                                      high= ESG_yf["High"],
                                      low= ESG_yf["Low"],
                                      close= ESG_yf["Close"])])
 
-fig.show()
+fig.show()"""
 
 # removal of unnecessary info from both ESG & SIN etfs
 ESGdf = ESG_yf.drop(columns=["Open", "High", "Low", "Close"])
@@ -186,16 +186,16 @@ ESGARIMA.set_index("datetime",inplace=True)
 adf_pola = adfuller(ESGARIMA["own polarity"])
 adf_delta = adfuller(ESGARIMA["Delta"])
 
-print(adf_pola)
+"""print(adf_pola)
 print(adf_delta)
 
-"""ESGARIMA.plot()
+ESGARIMA.plot()
 plt.show()"""
 
 
 
 #### SPEARMAN CORRELATION ASSESSMENT (CONTINOUS-CONTINUOUS) #######
-"""
+
 # FOR ESG
 ESG_corr = spearmanr(ESG["own polarity"],ESG["Delta"])
 
@@ -258,13 +258,56 @@ SINrollingavg_corr = spearmanr(SINrollingavg["rolling_avg_polarity"],SINrollinga
 print("SIN-Sentiment correlation on 5 day rolling average lag basis: ", SINrollingavg_corr)
 
 print("\n")
-"""
+
+
+
+#### CONTINGENT APPROACH (CATEGORICAL-CATEGORICAL) #######
+
+# FOR ESG
+ESG_chi = ESG.drop(columns=["datetime","own polarity", "Delta"])
+
+ESG_contingency = pd.crosstab(index=ESG_chi["sentiment-direction"], columns=ESG_chi["fund-direction"])
+print(ESG_contingency)
+
+ESG_observed = [ESG_contingency.to_numpy()[0], ESG_contingency.to_numpy()[1]]
+ESG_chi_val, ESG_p_val, ESG_dof, ESG_expected = chi2_contingency(ESG_observed)
+print(ESG_chi_val, ESG_p_val, ESG_dof, ESG_expected)
+
+# FOR SIN
+SIN_chi = SIN.drop(columns=["datetime","own polarity", "Delta"])
+
+SIN_contingency = pd.crosstab(index=SIN_chi["sentiment-direction"], columns=SIN_chi["fund-direction"])
+print(SIN_contingency)
+
+SIN_observed = [SIN_contingency.to_numpy()[0], SIN_contingency.to_numpy()[1]]
+SIN_chi_val, SIN_p_val, SIN_dof, SIN_expected = chi2_contingency(SIN_observed)
+print(SIN_chi_val, SIN_p_val, SIN_dof, SIN_expected)
+
+print(ESG_contingency.to_latex())
+print(SIN_contingency.to_latex())
+
+
+
+
+
+
+
+
+#################### EXTRA ###############################
+
+
+
+
+
+###### TRIAL OF LOGISTIC REGRESSION, INTERMEDIARY STEP OF ANALYSIS ######
+
+
+
 #### LOGISTIC APPROACH (CONTINUOUS-CATEGORICAL) #######
 
 ### Multinomial Logistic Regression ###
 """
 ## FOR ESG
-
 
 ESG_logit = ESG.copy(deep=False)
 ESG_logit_reactive = ESG.copy(deep=False)
@@ -272,10 +315,10 @@ ESG_logit_proactive = ESG.copy(deep=False)
 
 # non-lagged
 ESG_logit = ESG_logit.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"])
-ESG_logit = pd.get_dummies(data=ESG_logit, prefix="", columns=["sentiment-direction"])
+#ESG_logit = pd.get_dummies(data=ESG_logit, prefix="", columns=["sentiment-direction"])
 
-ESG_log_Y = ESG_logit[["_Neutral", "_Bullish", "_Bearish"]]
-ESG_log_X = ESG_logit.drop(columns=[ "_Bearish", "_Bullish", "_Neutral"])
+ESG_log_Y = ESG_logit["sentiment-direction"]
+ESG_log_X = ESG_logit.drop(columns=["sentiment-direction"])
 
 logit_model_esg =sm.MNLogit(ESG_log_Y,sm.add_constant(ESG_log_X))
 result1=logit_model_esg.fit()
@@ -284,12 +327,12 @@ print(stats1)
 print(stats1.as_latex())
 
 # reactive
-ESG_logit_reactive = ESG_logit_reactive["sentiment-direction"].shift(-1)
+ESG_logit_reactive["sentiment-direction"].shift(-1)
 ESG_logit_reactive = ESG_logit_reactive.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"])
-ESG_logit_reactive = pd.get_dummies(data=ESG_logit_reactive, prefix="", columns=["sentiment-direction"])
+#ESG_logit_reactive = pd.get_dummies(data=ESG_logit_reactive, prefix="", columns=["sentiment-direction"])
 
-ESG_log_Y_reactive = ESG_logit_reactive[["_Neutral", "_Bullish", "_Bearish"]]
-ESG_log_X_reactive = ESG_logit_reactive.drop(columns=[ "_Bearish", "_Bullish", "_Neutral"])
+ESG_log_Y_reactive = ESG_logit_reactive["sentiment-direction"]
+ESG_log_X_reactive = ESG_logit_reactive.drop(columns=[ "sentiment-direction"])
 
 logit_model_esg_reac =sm.MNLogit(ESG_log_Y_reactive,sm.add_constant(ESG_log_X_reactive))
 result2=logit_model_esg_reac.fit()
@@ -298,13 +341,13 @@ print(stats2)
 print(stats2.as_latex())
 
 # proactive
-ESG_logit_proactive = ESG_logit_proactive["sentiment-direction"].shift(1)
+ESG_logit_proactive["sentiment-direction"].shift(1)
 ESG_logit_proactive = ESG_logit_proactive.dropna()
-ESG_logit_proactive = ESG_logit_proactive.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"])
-ESG_logit_proactive = pd.get_dummies(data=ESG_logit_proactive, prefix="", columns=["sentiment-direction"])
+ESG_logit_proactive.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"], inplace=True)
+#ESG_logit_proactive = pd.get_dummies(data=ESG_logit_proactive, prefix="", columns=["sentiment-direction"])
 
-ESG_log_Y_proactive = ESG_logit_proactive[["_Neutral", "_Bullish", "_Bearish"]]
-ESG_log_X_proactive = ESG_logit_proactive.drop(columns=[ "_Bearish", "_Bullish", "_Neutral"])
+ESG_log_Y_proactive = ESG_logit_proactive["sentiment-direction"]
+ESG_log_X_proactive = ESG_logit_proactive.drop(columns=["sentiment-direction"])
 
 logit_model_esg_proac =sm.MNLogit(ESG_log_Y_proactive,sm.add_constant(ESG_log_X_proactive))
 result3=logit_model_esg_proac.fit()
@@ -319,11 +362,11 @@ SIN_logit_reactive = SIN.copy(deep=False)
 SIN_logit_proactive = SIN.copy(deep=False)
 
 # non-lagged
-SIN_logit = SIN_logit.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"])
-SIN_logit = pd.get_dummies(data=SIN_logit, prefix="", columns=["sentiment-direction"])
+SIN_logit.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"], inplace=True)
+#SIN_logit = pd.get_dummies(data=SIN_logit, prefix="", columns=["sentiment-direction"])
 
-SIN_log_Y = SIN_logit[["_Neutral", "_Bullish", "_Bearish"]]
-SIN_log_X = SIN_logit.drop(columns=[ "_Bearish", "_Bullish", "_Neutral"])
+SIN_log_Y = SIN_logit["sentiment-direction"]
+SIN_log_X = SIN_logit.drop(columns=["sentiment-direction"])
 
 logit_model_sin = sm.MNLogit(SIN_log_Y,sm.add_constant(SIN_log_X))
 result4 = logit_model_sin.fit()
@@ -332,12 +375,12 @@ print(stats4)
 print(stats4.as_latex())
 
 # reactive
-SIN_logit_reactive = SIN_logit_reactive["sentiment-direction"].shift(-1)
-SIN_logit_reactive = SIN_logit_reactive.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"])
-SIN_logit_reactive = pd.get_dummies(data=SIN_logit_reactive, prefix="", columns=["sentiment-direction"])
+SIN_logit_reactive["sentiment-direction"].shift(-1)
+SIN_logit_reactive.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"], inplace=True)
+#SIN_logit_reactive = pd.get_dummies(data=SIN_logit_reactive, prefix="", columns=["sentiment-direction"])
 
-SIN_log_Y_reactive = SIN_logit_reactive[["_Neutral", "_Bullish", "_Bearish"]]
-SIN_log_X_reactive = SIN_logit_reactive.drop(columns=[ "_Bearish", "_Bullish", "_Neutral"])
+SIN_log_Y_reactive = SIN_logit_reactive["sentiment-direction"]
+SIN_log_X_reactive = SIN_logit_reactive.drop(columns=["sentiment-direction"])
 
 logit_model_sin_reac =sm.MNLogit(SIN_log_Y_reactive,sm.add_constant(SIN_log_X_reactive))
 result5=logit_model_sin_reac.fit()
@@ -346,24 +389,25 @@ print(stats5)
 print(stats5.as_latex())
 
 # proactive
-SIN_logit_proactive = SIN_logit_proactive["sentiment-direction"].shift(1)
+SIN_logit_proactive["sentiment-direction"].shift(1)
 SIN_logit_proactive.dropna()
-SIN_logit_proactive = SIN_logit_proactive.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"])
-SIN_logit_proactive = pd.get_dummies(data=SIN_logit_proactive, prefix="", columns=["sentiment-direction"])
+SIN_logit_proactive.drop(columns=["datetime", "body word count", "own polarity", "polarity_sign", "fund-direction"], inplace=True)
+#SIN_logit_proactive = pd.get_dummies(data=SIN_logit_proactive, prefix="", columns=["sentiment-direction"])
 
-SIN_log_Y_proactive = SIN_logit_proactive[["_Neutral", "_Bullish", "_Bearish"]]
-SIN_log_X_proactive = SIN_logit_proactive.drop(columns=[ "_Bearish", "_Bullish", "_Neutral"])
+SIN_log_Y_proactive = SIN_logit_proactive["sentiment-direction"]
+SIN_log_X_proactive = SIN_logit_proactive.drop(columns=["sentiment-direction"])
 
 logit_model_sin_proac = sm.MNLogit(SIN_log_Y_proactive,sm.add_constant(SIN_log_X_proactive))
 result6 = logit_model_sin_proac.fit()
 stats6 = result6.summary()
 print(stats6)
 print(stats6.as_latex())
-"""
+
+
 ### Binomial Logistic Regression ###
 
 # FOR ESG
-"""
+
 ESG_logit = pd.get_dummies(data=ESG,prefix="", columns=["sentiment-direction"])
 
 ESGbearishlogit = sm.Logit(ESG_logit["_Bearish"], ESG_logit["Delta"]).fit()
@@ -537,29 +581,3 @@ print("\n")
 print("SIN Logit Proactive Neutral Latex Results: ")
 print(SINneutrallogitproactive.summary().as_latex())
 print("\n")"""
-
-
-#### LOGISTIC APPROACH (CATEGORICAL-CATEGORICAL) #######
-
-# FOR ESG
-ESG_chi = ESG.drop(columns=["datetime","own polarity", "Delta"])
-
-ESG_contingency = pd.crosstab(index=ESG_chi["sentiment-direction"], columns=ESG_chi["fund-direction"])
-print(ESG_contingency)
-
-ESG_observed = [ESG_contingency.to_numpy()[0], ESG_contingency.to_numpy()[1]]
-ESG_chi_val, ESG_p_val, ESG_dof, ESG_expected = chi2_contingency(ESG_observed)
-print(ESG_chi_val, ESG_p_val, ESG_dof, ESG_expected)
-
-# FOR SIN
-SIN_chi = SIN.drop(columns=["datetime","own polarity", "Delta"])
-
-SIN_contingency = pd.crosstab(index=SIN_chi["sentiment-direction"], columns=SIN_chi["fund-direction"])
-print(SIN_contingency)
-
-SIN_observed = [SIN_contingency.to_numpy()[0], SIN_contingency.to_numpy()[1]]
-SIN_chi_val, SIN_p_val, SIN_dof, SIN_expected = chi2_contingency(SIN_observed)
-print(SIN_chi_val, SIN_p_val, SIN_dof, SIN_expected)
-
-print(ESG_contingency.to_latex())
-print(SIN_contingency.to_latex())

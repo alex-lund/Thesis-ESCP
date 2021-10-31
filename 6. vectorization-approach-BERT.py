@@ -75,19 +75,22 @@ tokenizer = transformers.BertTokenizer.from_pretrained("bert-base-uncased", do_l
 
 nlp_ = transformers.TFBertModel.from_pretrained("bert-base-uncased")
 
-## function to apply
+# BERT function
 def utils_bert_embedding(txt, tokenizer, nlp):
     idx = tokenizer.encode(txt)
     idx = np.array(idx)[None,:]
     embedding = nlp(idx)
     X = np.array(embedding[0][0][1:-1])
     return X
-## create list of news vector
+
+## compute BERT vector for each sentence
 lst_mean_vecs = [utils_bert_embedding(txt, tokenizer, nlp_).mean(0)
                  for txt in reddit["body"]]
-## create the feature matrix (n x 768)
+
+# create the feature matrix (n x 768)
 X = np.array(lst_mean_vecs)
 
+## compute BERT vector for target labels
 dic_y = {k:utils_bert_embedding(v, tokenizer, nlp_).mean(0) for k,v
          in clusters.items()}
 
@@ -95,20 +98,21 @@ y = list(dic_y.values())
 
 Y = np.array(y)
 
+## cosine similarity between sentences and target labels
 similarities = np.array([metrics.pairwise.cosine_similarity(X, Y).T]).T
 
 labels = list(dic_y.keys())
 
-### adjust and rescale
+### adjustment
 for i in range(len(similarities)):
     if sum(similarities[i]) == 0:
        similarities[i] = [0]*len(labels)
        similarities[i][np.random.choice(range(len(labels)))] = 1
     similarities[i] = similarities[i] / sum(similarities[i])
 
-
 predicted_prob = similarities
 predicted = [labels[np.argmax(pred)] for pred in predicted_prob]
+
 
 bertlabels = pd.DataFrame({"BERT-label": pd.Series(predicted)})
 

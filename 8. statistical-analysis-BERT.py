@@ -32,7 +32,7 @@ df["datetime"] = pd.to_datetime(df["datetime"]).dt.date
 print(df["BERT-label"].value_counts())
 
 # fund information and computation of delta
-InvescoESG = yfinance.Ticker("ESG") #tried with ESG, SUSA, ICLN, ESGV, ESGD, PBD, WOOD, EVX, RNRG => all funds return same correlation pattern with sentiment-polarity
+InvescoESG = yfinance.Ticker("SUSA") #tried with ESG, SUSA, ICLN, ESGV, ESGD, PBD, WOOD, EVX, RNRG => all funds return same correlation pattern with sentiment-polarity
 
 invescoESGdf = InvescoESG.history(start='2010-1-1', end='2021-1-1') #(start='2010-1-1', end='2021-1-1')
 

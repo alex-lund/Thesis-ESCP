@@ -20,6 +20,7 @@ import plotly.graph_objects as go
 import plotly.io as pio
 pio.renderers.default = "browser"
 import statsmodels.api as sm
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from scipy.stats import spearmanr
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.arima_model import ARIMA
@@ -186,9 +187,15 @@ ESGARIMA.set_index("datetime",inplace=True)
 adf_pola = adfuller(ESGARIMA["own polarity"])
 adf_delta = adfuller(ESGARIMA["Delta"])
 
-"""print(adf_pola)
+print(adf_pola)
 print(adf_delta)
 
+plot_acf_pola = plot_acf(ESGARIMA["own polarity"].dropna())
+plot_acf_pola.show()
+plot_pacf_delta = plot_pacf(ESGARIMA["Delta"].dropna())
+plot_pacf_delta.show()
+
+"""
 ESGARIMA.plot()
 plt.show()"""
 

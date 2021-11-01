@@ -77,7 +77,7 @@ SINdf["Date"] = pd.to_datetime(SINdf["Date"]).dt.date
 SINdf.rename(columns={"Date": "datetime"}, inplace=True)
 
 esg_sin_df = ESGdf.merge(SINdf, on="datetime")
-
+esg_sin_df.set_index("datetime",inplace=True)
 esg_sin_df.plot()
 plt.show()
 

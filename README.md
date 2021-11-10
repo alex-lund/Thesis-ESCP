@@ -1,2 +1,25 @@
-# Professional Thesis ESCP - NLP Sentiment Analysis on the performance of ESG-screened equities
-Repo for NLP testing of economic sentiment analysis on ESG-screened public equities
+# Professional Thesis ESCP - Sentiment Analysis on the performance of ESG-screened against "Sin" equities
+
+Packages required:
+
+pandas
+numpy
+matplotlib
+seaborn
+datetime
+requests
+praw
+ploty
+collections
+textblob
+nltk
+spacy
+sklearn
+stargazer
+quandl
+yfinance
+pio
+statsmodels
+scipy
+gensim
+transformers
